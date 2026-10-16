@@ -41,7 +41,7 @@ Priority: optional
 Architecture: amd64
 Maintainer: CCCCY-ci
 Description: WeChat mini-program package parser and source recovery tool
-Depends: libc6 (>= 2.27), libgtk-3-0, libwebkit2gtk-4.0-37
+Depends: libc6 (>= 2.35), libgtk-3-0, libwebkit2gtk-4.0-37
 EOF
 dpkg-deb --build --root-owner-group "$install_root" "$release_dir/wxmini-kit-linux-amd64.deb"
 
@@ -56,7 +56,7 @@ Release: $rpm_release
 Summary: WeChat mini-program package parser and source recovery tool
 License: See project source
 BuildArch: x86_64
-Requires: glibc >= 2.27
+Requires: glibc >= 2.35
 
 %description
 wxmini-kit parses and unpacks WeChat mini-program packages and restores source files.
