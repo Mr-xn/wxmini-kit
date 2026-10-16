@@ -39,10 +39,19 @@ jobs:
           - name: macOS Universal
             platform: macos
             os: macos-latest
+            minimum_macos: '10.13'
             wails_platform: darwin/universal
             archive_name: wxmini-kit-macos-universal.zip
             artifact_name: wxmini-kit-macos-universal
             artifact_path: build/release/wxmini-kit-macos-universal.zip
+          - name: macOS ARM64
+            platform: macos
+            os: macos-26
+            minimum_macos: '11.0'
+            wails_platform: darwin/arm64
+            archive_name: wxmini-kit-macos-arm64.zip
+            artifact_name: wxmini-kit-macos-arm64
+            artifact_path: build/release/wxmini-kit-macos-arm64.zip
 
     steps:
       - name: Checkout
@@ -87,7 +96,7 @@ jobs:
       - name: Build macOS
         if: matrix.platform == 'macos'
         env:
-          MACOSX_DEPLOYMENT_TARGET: '10.13'
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.minimum_macos }}
         run: wails build -clean -platform ${{ matrix.wails_platform }} -ldflags "-X main.version=${{ env.BUILD_VERSION }}"
 
       - name: Package Windows
@@ -103,6 +112,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p build/release
+          /usr/libexec/PlistBuddy -c "Set :LSMinimumSystemVersion ${{ matrix.minimum_macos }}" build/bin/wxmini-kit.app/Contents/Info.plist
           ditto -c -k --keepParent build/bin/wxmini-kit.app "build/release/${{ matrix.archive_name }}"
 
       - name: Upload build artifact
@@ -112,10 +122,96 @@ jobs:
           path: ${{ matrix.artifact_path }}
           if-no-files-found: error
 
+  build-linux:
+    name: Build Linux DEB and RPM
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    env:
+      BUILD_VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'dev' }}
+      VITE_APP_VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'dev' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Run Go tests
+        run: go test ./...
+
+      - name: Run Go static checks
+        run: go vet ./wechat
+
+      - name: Install Wails CLI
+        env:
+          CGO_ENABLED: 0
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.14.0
+
+      - name: Build Linux binary with Ubuntu 18.04 compatibility
+        run: |
+          go_root="$(go env GOROOT)"
+          wails_bin="$(command -v wails)"
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" \
+            -v "$go_root:$go_root:ro" \
+            -v "$wails_bin:/usr/local/bin/wails:ro" \
+            -w "$GITHUB_WORKSPACE" \
+            -e GOROOT="$go_root" \
+            -e PATH="$go_root/bin:/usr/local/bin:/usr/bin:/bin" \
+            -e BUILD_VERSION="$BUILD_VERSION" \
+            -e GOTOOLCHAIN=local \
+            ubuntu:18.04 bash -euxo pipefail -c '
+              sed -i \
+                -e "s|archive.ubuntu.com/ubuntu|old-releases.ubuntu.com/ubuntu|g" \
+                -e "s|security.ubuntu.com/ubuntu|old-releases.ubuntu.com/ubuntu|g" \
+                /etc/apt/sources.list
+              apt-get -o Acquire::Check-Valid-Until=false update
+              DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+                build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.0-dev
+              wails build -clean -platform linux/amd64 -s \
+                -ldflags "-X main.version=${BUILD_VERSION}"
+            '
+
+      - name: Install RPM packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rpm
+
+      - name: Package Linux binary
+        run: bash build/linux/package.sh "$BUILD_VERSION"
+
+      - name: Upload Linux build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wxmini-kit-linux-amd64
+          path: |
+            build/release/wxmini-kit-linux-amd64.deb
+            build/release/wxmini-kit-linux-x86_64.rpm
+          if-no-files-found: error
+
   publish:
     name: Publish GitHub Release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
+    needs: [build, build-linux]
     runs-on: ubuntu-latest
     permissions:
       contents: write

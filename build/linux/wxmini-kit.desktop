@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=wxmini-kit
+Comment=WeChat mini-program package parser and source recovery tool
+Exec=wxmini-kit
+Icon=wxmini-kit
+Terminal=false
+Categories=Utility;
+StartupNotify=true

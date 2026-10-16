@@ -17,6 +17,7 @@
 ## 主要功能
 
 - ✅ 支持自动扫描 Windows、macOS 上的微信小程序目录。
+- ✅ 支持自动检测 Linux 上常见的微信小程序目录。
 - ✅ 支持手动选择小程序目录或单个 wxapkg 文件。
 - ✅ 支持 wxapkg 解析、解包与批量反编译。
 - ✅ 支持尽可能恢复 JavaScript、JSON、WXML、WXSS 和 WXS 等源码文件。
@@ -27,7 +28,11 @@
 前往 [Releases](https://github.com/CCCCY-ci/wxmini-kit/releases) 下载对应平台的版本。
 
 - Windows 压缩包内包含 <code>.exe</code> 文件；
-- macOS 压缩包内包含支持 Intel 和 Apple Silicon 的 Universal App。
+- macOS 提供支持 Intel 和 Apple Silicon 的 Universal App，以及独立 Apple Silicon 版本；
+- Linux 提供 amd64 的 <code>.deb</code> 和 <code>.rpm</code> 安装包。
+
+Linux 版本以 Ubuntu 18.04 环境构建，目标 GLIBC 版本为 2.27；运行时还需要 GTK 3 和 WebKitGTK 4.0。不同发行版的软件包名称和可用版本可能不同，请确认系统提供这些运行库。
+Linux 自动检测会尝试 `~/.config/WeChat/Applet`、`~/.config/Tencent/xwechat/radium/...` 和 `~/Documents/WeChat Files/Applet` 等常见位置；微信版本或安装方式不同，目录可能有所差异，也可以手动选择目录。
 
 ## 本地构建
 
@@ -75,6 +80,12 @@ wails build -platform windows/amd64
 
 # macOS Universal
 wails build -platform darwin/universal
+
+# macOS Apple Silicon
+wails build -platform darwin/arm64
+
+# Linux amd64（需要 GTK 3 和 WebKitGTK 4.0 开发库）
+wails build -platform linux/amd64
 ~~~
 
 macOS 需要安装 Xcode Command Line Tools：
