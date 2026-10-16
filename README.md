@@ -10,7 +10,7 @@
 - CPU Time：**2989.98s → 110.25s**
 - 峰值内存：**4.4GB → ~356MB**
 
-![界面截图](image.png)
+![界面截图](./image.png)
 
 > 本项目仅用于学习、研究和合法的软件分析。请确保你拥有待处理文件的合法权限，并遵守当地法律法规、微信平台规则以及原项目和第三方依赖的许可证要求。
 
@@ -25,13 +25,13 @@
 
 ## 下载
 
-前往 [Releases](https://github.com/CCCCY-ci/wxmini-kit/releases) 下载对应平台的版本。
+前往 [Releases](../../releases) 下载对应平台的版本。
 
 - Windows 压缩包内包含 <code>.exe</code> 文件；
 - macOS 提供支持 Intel 和 Apple Silicon 的 Universal App，以及独立 Apple Silicon 版本；
 - Linux 提供 amd64 的 <code>.deb</code> 和 <code>.rpm</code> 安装包。
 
-Linux 版本以 Ubuntu 18.04 环境构建，目标 GLIBC 版本为 2.27；运行时还需要 GTK 3 和 WebKitGTK 4.0。不同发行版的软件包名称和可用版本可能不同，请确认系统提供这些运行库。
+Linux 版本以 Ubuntu 22.04 环境构建，目标 GLIBC 版本为 2.35；运行时还需要 GTK 3 和 WebKitGTK 4.0。不同发行版的软件包名称和可用版本可能不同，请确认系统提供这些运行库。
 Linux 自动检测会尝试 `~/.config/WeChat/Applet`、`~/.config/Tencent/xwechat/radium/...` 和 `~/Documents/WeChat Files/Applet` 等常见位置；微信版本或安装方式不同，目录可能有所差异，也可以手动选择目录。
 
 ## 本地构建
@@ -52,7 +52,7 @@ go install github.com/wailsapp/wails/v2/cmd/wails@v2.14.0
 安装前端依赖：
 
 ~~~bash
-git clone https://github.com/CCCCY-ci/wxmini-kit.git
+git clone https://github.com/Mr-xn/wxmini-kit.git
 cd wxmini-kit/frontend
 npm ci
 cd ..
