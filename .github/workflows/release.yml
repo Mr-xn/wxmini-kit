@@ -210,6 +210,10 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          body: |
+            ### macOS 首次打开提示“已损坏”
+
+            确认应用来自本项目官方 Releases 后，可在终端执行 `xattr -dr com.apple.quarantine "/Applications/wxmini-kit.app"` 移除隔离属性。如果应用不在 `/Applications`，请替换为实际路径。不要对来源不明的应用执行此命令。
           generate_release_notes: true
           fail_on_unmatched_files: true
           files: |

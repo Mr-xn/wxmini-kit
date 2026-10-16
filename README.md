@@ -94,6 +94,16 @@ macOS 需要安装 Xcode Command Line Tools：
 xcode-select --install
 ~~~
 
+### macOS 无法打开应用
+
+如果从官方 Releases 下载后，macOS 提示“wxmini-kit.app 已损坏，无法打开”，通常是 Gatekeeper 拦截了未签名和未公证的应用。确认应用来自本项目官方 Releases 后，可以在终端执行以下命令移除隔离属性：
+
+~~~bash
+xattr -dr com.apple.quarantine "/Applications/wxmini-kit.app"
+~~~
+
+如果应用不在 `/Applications`，请将路径替换为实际的 `.app` 路径。不要对来源不明的应用执行此命令；如果仍无法打开，请重新下载官方安装包。
+
 Windows 10/11 需要可用的 Microsoft Edge WebView2 Runtime。
 
 ## 说明
